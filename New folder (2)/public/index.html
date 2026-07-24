@@ -1,0 +1,1552 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>The Toolbox — All-in-One Utilities</title>
+
+<!-- Tailwind CDN (loaded once) -->
+<script src="https://cdn.tailwindcss.com"></script>
+<!-- Lucide Icons (loaded once) -->
+<script src="https://unpkg.com/lucide@latest"></script>
+<!-- QRCode.js -->
+<script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
+<!-- Fonts -->
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@500;600;700&family=Inter:wght@400;500;600&family=JetBrains+Mono:wght@400;500;700&display=swap" rel="stylesheet">
+<!-- Google tag (gtag.js) -->
+<script async src="https://www.googletagmanager.com/gtag/js?id=G-6Q5T1RDKTM"></script>
+<script>
+  window.dataLayer = window.dataLayer || [];
+  function gtag(){dataLayer.push(arguments);}
+  gtag('js', new Date());
+
+  gtag('config', 'G-6Q5T1RDKTM');
+</script>
+<script>
+  /* Single merged Tailwind config (previously declared twice with conflicts) */
+  tailwind.config = {
+    theme: {
+      extend: {
+        colors: {
+          /* Toolbox palette */
+          ink: '#1B1F23',
+          inkSoft: '#262B31',
+          paper: '#F6F5F1',
+          paperDim: '#EDECE6',
+          signal: '#FF6B35',
+          signalDark: '#E2551F',
+          teal: '#12897A',
+          muted: '#8B8F94',
+          /* Dev-tools palette (unique tokens from the second config) */
+          surface: '#FFFFFF',
+          'ink-soft': '#5B6570',
+          line: '#E1E5E9',
+          accent: '#0EA5A0',
+          'accent-dark': '#076F6B',
+          danger: '#E5484D',
+          success: '#12A454',
+        },
+        fontFamily: {
+          display: ['"Space Grotesk"', 'sans-serif'],
+          body: ['"Inter"', 'sans-serif'],
+          mono: ['"JetBrains Mono"', 'monospace'],
+        },
+      }
+    }
+  }
+</script>
+
+<style>
+  * { scrollbar-width: thin; scrollbar-color: #d8d6cf transparent; }
+  ::-webkit-scrollbar { width: 8px; height: 8px; }
+  ::-webkit-scrollbar-track { background: transparent; }
+  ::-webkit-scrollbar-thumb { background: #d8d6cf; border-radius: 4px; }
+  .ink ::-webkit-scrollbar-thumb { background: #3a4048; }
+
+  body { font-family: 'Inter', sans-serif; }
+
+  /* Drawer nav item — toolbox drawer styling */
+  .drawer {
+    position: relative;
+    transition: background-color .18s ease, padding-left .18s ease;
+  }
+  .drawer:hover { background-color: rgba(255,255,255,0.04); }
+  .drawer.active { background-color: rgba(255,107,53,0.12); }
+  .drawer.active .drawer-tag { color: #FF6B35; }
+  .drawer.active .drawer-rail { transform: scaleY(1); }
+  .drawer-rail {
+    position: absolute; left: 0; top: 8px; bottom: 8px; width: 3px;
+    background: #FF6B35; transform: scaleY(0); transform-origin: center;
+    transition: transform .2s ease; border-radius: 2px;
+  }
+
+  /* View fade transition */
+  .view { animation: fadeUp .35s ease both; }
+  @keyframes fadeUp {
+    from { opacity: 0; transform: translateY(6px); }
+    to { opacity: 1; transform: translateY(0); }
+  }
+
+  /* Reduced motion respect */
+  @media (prefers-reduced-motion: reduce) {
+    .view { animation: none; }
+    * { transition: none !important; }
+  }
+
+  input[type=range] {
+    -webkit-appearance: none; appearance: none;
+    height: 6px; border-radius: 999px; background: #E3E1D9; outline: none;
+  }
+  input[type=range]::-webkit-slider-thumb {
+    -webkit-appearance: none; appearance: none;
+    width: 18px; height: 18px; border-radius: 50%;
+    background: #FF6B35; cursor: pointer; border: 3px solid #F6F5F1;
+    box-shadow: 0 0 0 1px #FF6B35;
+  }
+  input[type=range]::-moz-range-thumb {
+    width: 18px; height: 18px; border-radius: 50%;
+    background: #FF6B35; cursor: pointer; border: 3px solid #F6F5F1;
+    box-shadow: 0 0 0 1px #FF6B35;
+  }
+
+  .focus-ring:focus-visible {
+    outline: 2px solid #FF6B35; outline-offset: 2px;
+  }
+
+  .measure-tick {
+    background-image: repeating-linear-gradient(90deg, #d8d6cf 0, #d8d6cf 1px, transparent 1px, transparent 8px);
+  }
+
+  .checkbox-tool {
+    accent-color: #FF6B35;
+  }
+
+  .tooltip-pop {
+    animation: pop .25s ease;
+  }
+  @keyframes pop {
+    0% { opacity: 0; transform: translateY(4px) scale(.96); }
+    100% { opacity: 1; transform: translateY(0) scale(1); }
+  }
+
+  /* ===== Dev-tools styles (merged from second document) ===== */
+  textarea, input[type="text"], input[type="number"] {
+    font-variant-ligatures: none;
+  }
+
+  .copy-btn:active svg { transform: scale(0.9); }
+
+  input[type="color"] {
+    -webkit-appearance: none;
+    appearance: none;
+    border: none;
+    padding: 0;
+    background: none;
+  }
+  input[type="color"]::-webkit-color-swatch-wrapper { padding: 0; }
+  input[type="color"]::-webkit-color-swatch { border: none; border-radius: 10px; }
+</style>
+</head>
+
+<body class="bg-paper text-ink font-body min-h-screen">
+
+<div class="flex min-h-screen">
+
+  <!-- ============ SIDEBAR ============ -->
+  <aside class="ink bg-ink text-paper w-64 shrink-0 hidden md:flex flex-col fixed h-full z-30 overflow-y-auto">
+    <div class="px-6 py-6 border-b border-white/10">
+      <div class="flex items-center gap-2">
+        <div class="w-9 h-9 rounded-md bg-signal flex items-center justify-center font-display font-bold text-ink">T</div>
+        <div>
+          <p class="font-display font-semibold text-lg leading-none">The Toolbox</p>
+          <p class="text-xs text-muted mt-1 font-mono">10 tools · 1 file</p>
+        </div>
+      </div>
+    </div>
+
+    <nav class="flex-1 py-4 px-2 space-y-1" id="sidebar-nav">
+      <button data-view="home" class="drawer active w-full text-left px-4 py-3 rounded-md flex items-center gap-3">
+        <span class="drawer-rail"></span>
+        <i data-lucide="layout-grid" class="w-4 h-4 text-muted"></i>
+        <span class="text-sm font-medium">Dashboard</span>
+      </button>
+
+      <div class="pt-3 pb-1 px-4 text-[11px] tracking-widest uppercase text-muted font-mono">Drawers</div>
+
+      <button data-view="compressor" class="drawer w-full text-left px-4 py-3 rounded-md flex items-center gap-3">
+        <span class="drawer-rail"></span>
+        <i data-lucide="image-down" class="w-4 h-4 text-muted"></i>
+        <span class="text-sm font-medium flex-1">Image Compressor</span>
+        <span class="drawer-tag text-[11px] font-mono text-muted">T-01</span>
+      </button>
+
+      <button data-view="qr" class="drawer w-full text-left px-4 py-3 rounded-md flex items-center gap-3">
+        <span class="drawer-rail"></span>
+        <i data-lucide="qr-code" class="w-4 h-4 text-muted"></i>
+        <span class="text-sm font-medium flex-1">QR Generator</span>
+        <span class="drawer-tag text-[11px] font-mono text-muted">T-02</span>
+      </button>
+
+      <button data-view="password" class="drawer w-full text-left px-4 py-3 rounded-md flex items-center gap-3">
+        <span class="drawer-rail"></span>
+        <i data-lucide="key-round" class="w-4 h-4 text-muted"></i>
+        <span class="text-sm font-medium flex-1">Password Generator</span>
+        <span class="drawer-tag text-[11px] font-mono text-muted">T-03</span>
+      </button>
+
+      <button data-view="text" class="drawer w-full text-left px-4 py-3 rounded-md flex items-center gap-3">
+        <span class="drawer-rail"></span>
+        <i data-lucide="type" class="w-4 h-4 text-muted"></i>
+        <span class="text-sm font-medium flex-1">Text Counter</span>
+        <span class="drawer-tag text-[11px] font-mono text-muted">T-04</span>
+      </button>
+
+      <div class="pt-3 pb-1 px-4 text-[11px] tracking-widest uppercase text-muted font-mono">Dev Tools</div>
+
+      <button data-view="base64" class="drawer w-full text-left px-4 py-3 rounded-md flex items-center gap-3">
+        <span class="drawer-rail"></span>
+        <i data-lucide="binary" class="w-4 h-4 text-muted"></i>
+        <span class="text-sm font-medium flex-1">Base64 Encoder</span>
+        <span class="drawer-tag text-[11px] font-mono text-muted">T-05</span>
+      </button>
+
+      <button data-view="json" class="drawer w-full text-left px-4 py-3 rounded-md flex items-center gap-3">
+        <span class="drawer-rail"></span>
+        <i data-lucide="braces" class="w-4 h-4 text-muted"></i>
+        <span class="text-sm font-medium flex-1">JSON Formatter</span>
+        <span class="drawer-tag text-[11px] font-mono text-muted">T-06</span>
+      </button>
+
+      <button data-view="markdown" class="drawer w-full text-left px-4 py-3 rounded-md flex items-center gap-3">
+        <span class="drawer-rail"></span>
+        <i data-lucide="file-text" class="w-4 h-4 text-muted"></i>
+        <span class="text-sm font-medium flex-1">Markdown Previewer</span>
+        <span class="drawer-tag text-[11px] font-mono text-muted">T-07</span>
+      </button>
+
+      <button data-view="color" class="drawer w-full text-left px-4 py-3 rounded-md flex items-center gap-3">
+        <span class="drawer-rail"></span>
+        <i data-lucide="palette" class="w-4 h-4 text-muted"></i>
+        <span class="text-sm font-medium flex-1">Color Converter</span>
+        <span class="drawer-tag text-[11px] font-mono text-muted">T-08</span>
+      </button>
+
+      <button data-view="lorem" class="drawer w-full text-left px-4 py-3 rounded-md flex items-center gap-3">
+        <span class="drawer-rail"></span>
+        <i data-lucide="align-left" class="w-4 h-4 text-muted"></i>
+        <span class="text-sm font-medium flex-1">Lorem Ipsum</span>
+        <span class="drawer-tag text-[11px] font-mono text-muted">T-09</span>
+      </button>
+
+      <button data-view="uuid" class="drawer w-full text-left px-4 py-3 rounded-md flex items-center gap-3">
+        <span class="drawer-rail"></span>
+        <i data-lucide="fingerprint" class="w-4 h-4 text-muted"></i>
+        <span class="text-sm font-medium flex-1">UUID &amp; Hash</span>
+        <span class="drawer-tag text-[11px] font-mono text-muted">T-10</span>
+      </button>
+    </nav>
+
+    <div class="px-6 py-5 border-t border-white/10 text-xs text-muted">
+      Runs entirely in your browser.<br>Nothing you type or upload leaves this tab.
+    </div>
+  </aside>
+
+  <!-- ============ MOBILE TOP BAR ============ -->
+  <header class="md:hidden fixed top-0 inset-x-0 z-30 bg-ink text-paper flex items-center justify-between px-4 py-3">
+    <div class="flex items-center gap-2">
+      <div class="w-7 h-7 rounded bg-signal flex items-center justify-center font-display font-bold text-ink text-sm">T</div>
+      <span class="font-display font-semibold">The Toolbox</span>
+    </div>
+    <button id="mobile-menu-btn" class="p-2" aria-label="Open menu"><i data-lucide="menu" class="w-5 h-5"></i></button>
+  </header>
+
+  <!-- Mobile nav drawer -->
+  <div id="mobile-nav" class="md:hidden fixed inset-0 z-40 hidden">
+    <div class="absolute inset-0 bg-black/50" id="mobile-nav-backdrop"></div>
+    <div class="absolute left-0 top-0 h-full w-72 bg-ink text-paper p-4 flex flex-col overflow-y-auto">
+      <div class="flex items-center justify-between mb-4">
+        <span class="font-display font-semibold text-lg">Menu</span>
+        <button id="mobile-nav-close" class="p-2" aria-label="Close menu"><i data-lucide="x" class="w-5 h-5"></i></button>
+      </div>
+      <nav class="space-y-1" id="mobile-sidebar-nav">
+        <button data-view="home" class="drawer-m w-full text-left px-4 py-3 rounded-md flex items-center gap-3">
+          <i data-lucide="layout-grid" class="w-4 h-4 text-muted"></i><span class="text-sm font-medium">Dashboard</span>
+        </button>
+        <button data-view="compressor" class="drawer-m w-full text-left px-4 py-3 rounded-md flex items-center gap-3">
+          <i data-lucide="image-down" class="w-4 h-4 text-muted"></i><span class="text-sm font-medium">Image Compressor</span>
+        </button>
+        <button data-view="qr" class="drawer-m w-full text-left px-4 py-3 rounded-md flex items-center gap-3">
+          <i data-lucide="qr-code" class="w-4 h-4 text-muted"></i><span class="text-sm font-medium">QR Generator</span>
+        </button>
+        <button data-view="password" class="drawer-m w-full text-left px-4 py-3 rounded-md flex items-center gap-3">
+          <i data-lucide="key-round" class="w-4 h-4 text-muted"></i><span class="text-sm font-medium">Password Generator</span>
+        </button>
+        <button data-view="text" class="drawer-m w-full text-left px-4 py-3 rounded-md flex items-center gap-3">
+          <i data-lucide="type" class="w-4 h-4 text-muted"></i><span class="text-sm font-medium">Text Counter</span>
+        </button>
+        <button data-view="base64" class="drawer-m w-full text-left px-4 py-3 rounded-md flex items-center gap-3">
+          <i data-lucide="binary" class="w-4 h-4 text-muted"></i><span class="text-sm font-medium">Base64 Encoder</span>
+        </button>
+        <button data-view="json" class="drawer-m w-full text-left px-4 py-3 rounded-md flex items-center gap-3">
+          <i data-lucide="braces" class="w-4 h-4 text-muted"></i><span class="text-sm font-medium">JSON Formatter</span>
+        </button>
+        <button data-view="markdown" class="drawer-m w-full text-left px-4 py-3 rounded-md flex items-center gap-3">
+          <i data-lucide="file-text" class="w-4 h-4 text-muted"></i><span class="text-sm font-medium">Markdown Previewer</span>
+        </button>
+        <button data-view="color" class="drawer-m w-full text-left px-4 py-3 rounded-md flex items-center gap-3">
+          <i data-lucide="palette" class="w-4 h-4 text-muted"></i><span class="text-sm font-medium">Color Converter</span>
+        </button>
+        <button data-view="lorem" class="drawer-m w-full text-left px-4 py-3 rounded-md flex items-center gap-3">
+          <i data-lucide="align-left" class="w-4 h-4 text-muted"></i><span class="text-sm font-medium">Lorem Ipsum</span>
+        </button>
+        <button data-view="uuid" class="drawer-m w-full text-left px-4 py-3 rounded-md flex items-center gap-3">
+          <i data-lucide="fingerprint" class="w-4 h-4 text-muted"></i><span class="text-sm font-medium">UUID &amp; Hash</span>
+        </button>
+      </nav>
+    </div>
+  </div>
+
+  <!-- ============ MAIN CONTENT ============ -->
+  <main class="flex-1 md:ml-64 pt-16 md:pt-0">
+    <div class="max-w-5xl mx-auto px-5 md:px-10 py-8 md:py-12">
+
+      <!-- ===================== HOME / DASHBOARD ===================== -->
+      <section id="view-home" class="view">
+        <p class="font-mono text-xs tracking-widest uppercase text-signal mb-2">Dashboard</p>
+        <h1 class="font-display text-3xl md:text-4xl font-semibold mb-2">Ten tools, one drawer at a time.</h1>
+        <p class="text-muted max-w-xl mb-8">Pick a drawer from the toolbox. Every tool runs locally in this browser tab — nothing uploads to a server.</p>
+
+        <div class="grid sm:grid-cols-2 gap-4">
+          <button data-view="compressor" class="nav-card group text-left p-5 rounded-xl border border-black/5 bg-white hover:border-signal/40 hover:shadow-md transition-all">
+            <div class="w-10 h-10 rounded-lg bg-signal/10 flex items-center justify-center mb-4">
+              <i data-lucide="image-down" class="w-5 h-5 text-signal"></i>
+            </div>
+            <p class="font-mono text-[11px] text-muted mb-1">T-01</p>
+            <h3 class="font-display font-semibold mb-1">Image Compressor &amp; Resizer</h3>
+            <p class="text-sm text-muted">Shrink file size and dimensions, then download.</p>
+          </button>
+
+          <button data-view="qr" class="nav-card group text-left p-5 rounded-xl border border-black/5 bg-white hover:border-signal/40 hover:shadow-md transition-all">
+            <div class="w-10 h-10 rounded-lg bg-signal/10 flex items-center justify-center mb-4">
+              <i data-lucide="qr-code" class="w-5 h-5 text-signal"></i>
+            </div>
+            <p class="font-mono text-[11px] text-muted mb-1">T-02</p>
+            <h3 class="font-display font-semibold mb-1">QR Code Generator</h3>
+            <p class="text-sm text-muted">Turn any link or text into a scannable code, instantly.</p>
+          </button>
+
+          <button data-view="password" class="nav-card group text-left p-5 rounded-xl border border-black/5 bg-white hover:border-signal/40 hover:shadow-md transition-all">
+            <div class="w-10 h-10 rounded-lg bg-signal/10 flex items-center justify-center mb-4">
+              <i data-lucide="key-round" class="w-5 h-5 text-signal"></i>
+            </div>
+            <p class="font-mono text-[11px] text-muted mb-1">T-03</p>
+            <h3 class="font-display font-semibold mb-1">Password Generator</h3>
+            <p class="text-sm text-muted">Build strong passwords and check how tough they are.</p>
+          </button>
+
+          <button data-view="text" class="nav-card group text-left p-5 rounded-xl border border-black/5 bg-white hover:border-signal/40 hover:shadow-md transition-all">
+            <div class="w-10 h-10 rounded-lg bg-signal/10 flex items-center justify-center mb-4">
+              <i data-lucide="type" class="w-5 h-5 text-signal"></i>
+            </div>
+            <p class="font-mono text-[11px] text-muted mb-1">T-04</p>
+            <h3 class="font-display font-semibold mb-1">Text Counter &amp; Formatter</h3>
+            <p class="text-sm text-muted">Count words and characters, then reformat with one tap.</p>
+          </button>
+
+          <button data-view="base64" class="nav-card group text-left p-5 rounded-xl border border-black/5 bg-white hover:border-signal/40 hover:shadow-md transition-all">
+            <div class="w-10 h-10 rounded-lg bg-signal/10 flex items-center justify-center mb-4">
+              <i data-lucide="binary" class="w-5 h-5 text-signal"></i>
+            </div>
+            <p class="font-mono text-[11px] text-muted mb-1">T-05</p>
+            <h3 class="font-display font-semibold mb-1">Base64 Encoder / Decoder</h3>
+            <p class="text-sm text-muted">Convert text to Base64 and back. UTF-8 safe.</p>
+          </button>
+
+          <button data-view="json" class="nav-card group text-left p-5 rounded-xl border border-black/5 bg-white hover:border-signal/40 hover:shadow-md transition-all">
+            <div class="w-10 h-10 rounded-lg bg-signal/10 flex items-center justify-center mb-4">
+              <i data-lucide="braces" class="w-5 h-5 text-signal"></i>
+            </div>
+            <p class="font-mono text-[11px] text-muted mb-1">T-06</p>
+            <h3 class="font-display font-semibold mb-1">JSON Formatter &amp; Validator</h3>
+            <p class="text-sm text-muted">Pretty-print, minify, and validate JSON with clear errors.</p>
+          </button>
+
+          <button data-view="markdown" class="nav-card group text-left p-5 rounded-xl border border-black/5 bg-white hover:border-signal/40 hover:shadow-md transition-all">
+            <div class="w-10 h-10 rounded-lg bg-signal/10 flex items-center justify-center mb-4">
+              <i data-lucide="file-text" class="w-5 h-5 text-signal"></i>
+            </div>
+            <p class="font-mono text-[11px] text-muted mb-1">T-07</p>
+            <h3 class="font-display font-semibold mb-1">Markdown Previewer</h3>
+            <p class="text-sm text-muted">Write Markdown and see the rendered result live.</p>
+          </button>
+
+          <button data-view="color" class="nav-card group text-left p-5 rounded-xl border border-black/5 bg-white hover:border-signal/40 hover:shadow-md transition-all">
+            <div class="w-10 h-10 rounded-lg bg-signal/10 flex items-center justify-center mb-4">
+              <i data-lucide="palette" class="w-5 h-5 text-signal"></i>
+            </div>
+            <p class="font-mono text-[11px] text-muted mb-1">T-08</p>
+            <h3 class="font-display font-semibold mb-1">Color Picker &amp; Converter</h3>
+            <p class="text-sm text-muted">Pick a color and get HEX, RGB, and HSL values instantly.</p>
+          </button>
+
+          <button data-view="lorem" class="nav-card group text-left p-5 rounded-xl border border-black/5 bg-white hover:border-signal/40 hover:shadow-md transition-all">
+            <div class="w-10 h-10 rounded-lg bg-signal/10 flex items-center justify-center mb-4">
+              <i data-lucide="align-left" class="w-5 h-5 text-signal"></i>
+            </div>
+            <p class="font-mono text-[11px] text-muted mb-1">T-09</p>
+            <h3 class="font-display font-semibold mb-1">Lorem Ipsum Generator</h3>
+            <p class="text-sm text-muted">Generate placeholder text by paragraph or word count.</p>
+          </button>
+
+          <button data-view="uuid" class="nav-card group text-left p-5 rounded-xl border border-black/5 bg-white hover:border-signal/40 hover:shadow-md transition-all">
+            <div class="w-10 h-10 rounded-lg bg-signal/10 flex items-center justify-center mb-4">
+              <i data-lucide="fingerprint" class="w-5 h-5 text-signal"></i>
+            </div>
+            <p class="font-mono text-[11px] text-muted mb-1">T-10</p>
+            <h3 class="font-display font-semibold mb-1">UUID &amp; Hash Generator</h3>
+            <p class="text-sm text-muted">Random UUID v4s and SHA hashes via the Web Crypto API.</p>
+          </button>
+        </div>
+      </section>
+
+      <!-- ===================== TOOL 1: IMAGE COMPRESSOR ===================== -->
+      <section id="view-compressor" class="view hidden">
+        <p class="font-mono text-xs tracking-widest uppercase text-signal mb-2">T-01</p>
+        <h1 class="font-display text-2xl md:text-3xl font-semibold mb-1">Image Compressor &amp; Resizer</h1>
+        <p class="text-muted mb-8">Upload an image, adjust quality and size, then download the result.</p>
+
+        <div class="grid lg:grid-cols-5 gap-6">
+          <!-- Left: upload + controls -->
+          <div class="lg:col-span-2 space-y-5">
+            <label for="img-input" class="block cursor-pointer border-2 border-dashed border-black/15 rounded-xl p-6 text-center hover:border-signal/50 transition-colors bg-white">
+              <i data-lucide="upload-cloud" class="w-7 h-7 mx-auto mb-2 text-muted"></i>
+              <p class="text-sm font-medium">Click to upload PNG or JPG</p>
+              <p class="text-xs text-muted mt-1">or drag a file here</p>
+              <input type="file" id="img-input" accept="image/png, image/jpeg" class="hidden">
+            </label>
+
+            <div id="img-controls" class="hidden space-y-5 bg-white rounded-xl border border-black/5 p-5">
+              <div>
+                <div class="flex justify-between text-sm mb-2">
+                  <span class="font-medium">Quality</span>
+                  <span id="quality-val" class="font-mono text-signal">80%</span>
+                </div>
+                <input type="range" id="quality-slider" min="10" max="100" value="80" class="w-full">
+              </div>
+
+              <div>
+                <div class="flex items-center justify-between mb-2">
+                  <span class="text-sm font-medium">Dimensions</span>
+                  <label class="flex items-center gap-1.5 text-xs text-muted">
+                    <input type="checkbox" id="aspect-lock" checked class="checkbox-tool">
+                    Lock aspect ratio
+                  </label>
+                </div>
+                <div class="flex items-center gap-2">
+                  <input type="number" id="width-input" class="w-full border border-black/10 rounded-md px-3 py-2 text-sm focus-ring" placeholder="Width" aria-label="Width">
+                  <i data-lucide="x" class="w-3.5 h-3.5 text-muted shrink-0"></i>
+                  <input type="number" id="height-input" class="w-full border border-black/10 rounded-md px-3 py-2 text-sm focus-ring" placeholder="Height" aria-label="Height">
+                </div>
+              </div>
+
+              <div class="grid grid-cols-2 gap-3 text-sm">
+                <div class="bg-paperDim rounded-lg px-3 py-2">
+                  <p class="text-xs text-muted">Original</p>
+                  <p id="original-size" class="font-mono font-medium">—</p>
+                </div>
+                <div class="bg-paperDim rounded-lg px-3 py-2">
+                  <p class="text-xs text-muted">Compressed</p>
+                  <p id="compressed-size" class="font-mono font-medium text-teal">—</p>
+                </div>
+              </div>
+
+              <button id="download-img-btn" class="w-full bg-ink text-paper rounded-md py-2.5 text-sm font-medium flex items-center justify-center gap-2 hover:bg-inkSoft transition-colors focus-ring">
+                <i data-lucide="download" class="w-4 h-4"></i> Download image
+              </button>
+            </div>
+          </div>
+
+          <!-- Right: preview -->
+          <div class="lg:col-span-3">
+            <div id="img-preview-wrap" class="hidden bg-white rounded-xl border border-black/5 p-5 h-full items-center justify-center min-h-[320px]">
+              <canvas id="img-canvas" class="max-w-full max-h-[420px] rounded-md shadow-sm"></canvas>
+            </div>
+            <div id="img-empty" class="bg-white rounded-xl border border-black/5 p-10 h-full min-h-[320px] flex flex-col items-center justify-center text-center text-muted">
+              <i data-lucide="image" class="w-8 h-8 mb-3"></i>
+              <p class="text-sm">Your image preview will appear here</p>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- ===================== TOOL 2: QR GENERATOR ===================== -->
+      <section id="view-qr" class="view hidden">
+        <p class="font-mono text-xs tracking-widest uppercase text-signal mb-2">T-02</p>
+        <h1 class="font-display text-2xl md:text-3xl font-semibold mb-1">QR Code Generator</h1>
+        <p class="text-muted mb-8">Type text or a URL — the code updates as you type.</p>
+
+        <div class="grid md:grid-cols-2 gap-6">
+          <div class="space-y-4">
+            <label for="qr-input" class="block text-sm font-medium mb-1">Text or URL</label>
+            <textarea id="qr-input" rows="4" placeholder="https://example.com" class="w-full border border-black/10 rounded-md px-3 py-2.5 text-sm focus-ring bg-white"></textarea>
+
+            <div>
+              <label for="qr-size" class="block text-sm font-medium mb-2">Size</label>
+              <input type="range" id="qr-size" min="128" max="400" value="240" class="w-full">
+              <div class="flex justify-between text-xs text-muted mt-1 font-mono">
+                <span>128px</span><span id="qr-size-val">240px</span><span>400px</span>
+              </div>
+            </div>
+
+            <button id="download-qr-btn" disabled class="w-full bg-ink text-paper rounded-md py-2.5 text-sm font-medium flex items-center justify-center gap-2 hover:bg-inkSoft transition-colors disabled:opacity-40 disabled:cursor-not-allowed focus-ring">
+              <i data-lucide="download" class="w-4 h-4"></i> Download QR code
+            </button>
+          </div>
+
+          <div class="bg-white rounded-xl border border-black/5 p-6 flex items-center justify-center min-h-[300px]">
+            <div id="qr-empty" class="text-center text-muted">
+              <i data-lucide="qr-code" class="w-8 h-8 mx-auto mb-3"></i>
+              <p class="text-sm">Start typing to generate a code</p>
+            </div>
+            <div id="qrcode"></div>
+          </div>
+        </div>
+      </section>
+
+      <!-- ===================== TOOL 3: PASSWORD GENERATOR ===================== -->
+      <section id="view-password" class="view hidden">
+        <p class="font-mono text-xs tracking-widest uppercase text-signal mb-2">T-03</p>
+        <h1 class="font-display text-2xl md:text-3xl font-semibold mb-1">Password Generator</h1>
+        <p class="text-muted mb-8">Set your rules, generate, and check the strength before you use it.</p>
+
+        <div class="grid md:grid-cols-2 gap-6">
+          <div class="bg-white rounded-xl border border-black/5 p-5 space-y-5">
+            <div>
+              <div class="flex justify-between text-sm mb-2">
+                <span class="font-medium">Length</span>
+                <span id="pw-length-val" class="font-mono text-signal">16</span>
+              </div>
+              <input type="range" id="pw-length" min="8" max="32" value="16" class="w-full">
+            </div>
+
+            <div class="space-y-2.5">
+              <label class="flex items-center gap-2.5 text-sm">
+                <input type="checkbox" id="pw-uppercase" checked class="checkbox-tool w-4 h-4"> Include uppercase (A–Z)
+              </label>
+              <label class="flex items-center gap-2.5 text-sm">
+                <input type="checkbox" id="pw-lowercase" checked class="checkbox-tool w-4 h-4"> Include lowercase (a–z)
+              </label>
+              <label class="flex items-center gap-2.5 text-sm">
+                <input type="checkbox" id="pw-numbers" checked class="checkbox-tool w-4 h-4"> Include numbers (0–9)
+              </label>
+              <label class="flex items-center gap-2.5 text-sm">
+                <input type="checkbox" id="pw-symbols" class="checkbox-tool w-4 h-4"> Include symbols (!@#$…)
+              </label>
+            </div>
+
+            <button id="pw-generate-btn" class="w-full bg-signal text-white rounded-md py-2.5 text-sm font-medium flex items-center justify-center gap-2 hover:bg-signalDark transition-colors focus-ring">
+              <i data-lucide="refresh-cw" class="w-4 h-4"></i> Generate password
+            </button>
+          </div>
+
+          <div class="bg-white rounded-xl border border-black/5 p-5 flex flex-col">
+            <label for="pw-output" class="text-sm font-medium mb-2">Result</label>
+            <div class="relative">
+              <input id="pw-output" readonly placeholder="Your password will appear here" class="w-full border border-black/10 rounded-md px-3 py-3 pr-11 text-sm font-mono bg-paperDim focus-ring">
+              <button id="pw-copy-btn" class="absolute right-2 top-1/2 -translate-y-1/2 p-1.5 rounded-md hover:bg-black/5 transition-colors" aria-label="Copy password">
+                <i data-lucide="copy" class="w-4 h-4 text-muted"></i>
+              </button>
+              <div id="pw-copy-tooltip" class="hidden tooltip-pop absolute -top-9 right-0 bg-ink text-paper text-xs px-2.5 py-1.5 rounded-md">Copied!</div>
+            </div>
+
+            <div class="mt-6">
+              <div class="flex justify-between text-sm mb-2">
+                <span class="font-medium">Strength</span>
+                <span id="pw-strength-label" class="font-mono text-xs">—</span>
+              </div>
+              <div class="h-2 rounded-full bg-paperDim overflow-hidden">
+                <div id="pw-strength-bar" class="h-full w-0 rounded-full transition-all duration-300"></div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- ===================== TOOL 4: TEXT COUNTER ===================== -->
+      <section id="view-text" class="view hidden">
+        <p class="font-mono text-xs tracking-widest uppercase text-signal mb-2">T-04</p>
+        <h1 class="font-display text-2xl md:text-3xl font-semibold mb-1">Text Counter &amp; Formatter</h1>
+        <p class="text-muted mb-8">Paste your text below — stats update as you type.</p>
+
+        <textarea id="text-input" rows="10" placeholder="Start typing or paste your text here…" class="w-full border border-black/10 rounded-xl px-4 py-4 text-sm focus-ring bg-white resize-y" aria-label="Text to analyze"></textarea>
+
+        <div class="grid grid-cols-2 sm:grid-cols-4 gap-3 mt-4">
+          <div class="bg-white rounded-lg border border-black/5 px-4 py-3 text-center">
+            <p id="stat-words" class="font-mono text-xl font-semibold">0</p>
+            <p class="text-xs text-muted mt-1">Words</p>
+          </div>
+          <div class="bg-white rounded-lg border border-black/5 px-4 py-3 text-center">
+            <p id="stat-chars" class="font-mono text-xl font-semibold">0</p>
+            <p class="text-xs text-muted mt-1">Characters</p>
+          </div>
+          <div class="bg-white rounded-lg border border-black/5 px-4 py-3 text-center">
+            <p id="stat-sentences" class="font-mono text-xl font-semibold">0</p>
+            <p class="text-xs text-muted mt-1">Sentences</p>
+          </div>
+          <div class="bg-white rounded-lg border border-black/5 px-4 py-3 text-center">
+            <p id="stat-reading" class="font-mono text-xl font-semibold">0 min</p>
+            <p class="text-xs text-muted mt-1">Reading time</p>
+          </div>
+        </div>
+
+        <div class="flex flex-wrap gap-2.5 mt-5">
+          <button id="btn-uppercase" class="px-4 py-2 rounded-md bg-white border border-black/10 text-sm font-medium hover:border-signal/40 transition-colors focus-ring">UPPERCASE</button>
+          <button id="btn-lowercase" class="px-4 py-2 rounded-md bg-white border border-black/10 text-sm font-medium hover:border-signal/40 transition-colors focus-ring">lowercase</button>
+          <button id="btn-titlecase" class="px-4 py-2 rounded-md bg-white border border-black/10 text-sm font-medium hover:border-signal/40 transition-colors focus-ring">Title Case</button>
+          <button id="btn-clear" class="px-4 py-2 rounded-md bg-white border border-black/10 text-sm font-medium hover:border-signal/40 transition-colors focus-ring flex items-center gap-1.5">
+            <i data-lucide="trash-2" class="w-3.5 h-3.5"></i> Clear
+          </button>
+        </div>
+      </section>
+
+      <!-- ===================== TOOL 5: BASE64 ===================== -->
+      <section id="view-base64" class="view hidden">
+        <p class="font-mono text-xs tracking-widest uppercase text-signal mb-2">T-05</p>
+        <h1 class="font-display text-2xl md:text-3xl font-semibold mb-1 flex items-center gap-2">
+          <i data-lucide="binary" class="w-6 h-6 text-accent"></i> Base64 Encoder / Decoder
+        </h1>
+        <p class="text-muted mb-8">Convert text to Base64 or decode a Base64 string back to plain text. UTF-8 safe.</p>
+
+        <div class="bg-surface border border-line rounded-xl p-5 space-y-4">
+          <div>
+            <label for="b64-input" class="text-xs font-mono uppercase tracking-wide text-ink-soft mb-1.5 block">Input</label>
+            <textarea id="b64-input" rows="5" placeholder="Type or paste text here…"
+              class="w-full resize-y rounded-lg border border-line bg-paper/60 p-3 text-sm font-mono focus:bg-white transition-colors"></textarea>
+          </div>
+
+          <div class="flex flex-wrap gap-2">
+            <button onclick="b64Encode()" class="inline-flex items-center gap-1.5 px-4 py-2 rounded-lg bg-accent text-white text-sm font-medium hover:bg-accent-dark transition-colors">
+              <i data-lucide="arrow-down-to-line" class="w-4 h-4"></i> Encode
+            </button>
+            <button onclick="b64Decode()" class="inline-flex items-center gap-1.5 px-4 py-2 rounded-lg bg-ink text-white text-sm font-medium hover:bg-ink/80 transition-colors">
+              <i data-lucide="arrow-up-from-line" class="w-4 h-4"></i> Decode
+            </button>
+            <button onclick="b64Clear()" class="inline-flex items-center gap-1.5 px-4 py-2 rounded-lg border border-line text-sm font-medium text-ink-soft hover:bg-paper transition-colors">
+              <i data-lucide="eraser" class="w-4 h-4"></i> Clear
+            </button>
+          </div>
+
+          <div>
+            <div class="flex items-center justify-between mb-1.5">
+              <label for="b64-output" class="text-xs font-mono uppercase tracking-wide text-ink-soft">Output</label>
+              <button onclick="copyText('b64-output', this)" class="copy-btn text-xs font-medium text-accent-dark hover:text-accent flex items-center gap-1">
+                <i data-lucide="copy" class="w-3.5 h-3.5"></i> Copy
+              </button>
+            </div>
+            <textarea id="b64-output" rows="5" readonly placeholder="Result will appear here…"
+              class="w-full resize-y rounded-lg border border-line bg-paper/40 p-3 text-sm font-mono text-ink-soft"></textarea>
+            <p id="b64-msg" class="text-xs mt-1.5 hidden"></p>
+          </div>
+        </div>
+      </section>
+
+      <!-- ===================== TOOL 6: JSON ===================== -->
+      <section id="view-json" class="view hidden">
+        <p class="font-mono text-xs tracking-widest uppercase text-signal mb-2">T-06</p>
+        <h1 class="font-display text-2xl md:text-3xl font-semibold mb-1 flex items-center gap-2">
+          <i data-lucide="braces" class="w-6 h-6 text-accent"></i> JSON Formatter &amp; Validator
+        </h1>
+        <p class="text-muted mb-8">Pretty-print JSON or check it&apos;s syntactically valid, with clear error locations.</p>
+
+        <div class="bg-surface border border-line rounded-xl p-5 space-y-4">
+          <div>
+            <label for="json-input" class="text-xs font-mono uppercase tracking-wide text-ink-soft mb-1.5 block">Raw JSON</label>
+            <textarea id="json-input" rows="10" placeholder='{"example": [1, 2, 3], "ok": true}'
+              class="w-full resize-y rounded-lg border border-line bg-paper/60 p-3 text-sm font-mono focus:bg-white transition-colors"></textarea>
+          </div>
+
+          <div class="flex flex-wrap gap-2">
+            <button onclick="jsonFormat()" class="inline-flex items-center gap-1.5 px-4 py-2 rounded-lg bg-accent text-white text-sm font-medium hover:bg-accent-dark transition-colors">
+              <i data-lucide="sparkles" class="w-4 h-4"></i> Format / Pretty Print
+            </button>
+            <button onclick="jsonValidate()" class="inline-flex items-center gap-1.5 px-4 py-2 rounded-lg bg-ink text-white text-sm font-medium hover:bg-ink/80 transition-colors">
+              <i data-lucide="check-circle" class="w-4 h-4"></i> Validate
+            </button>
+            <button onclick="jsonMinify()" class="inline-flex items-center gap-1.5 px-4 py-2 rounded-lg border border-line text-sm font-medium text-ink-soft hover:bg-paper transition-colors">
+              <i data-lucide="minimize-2" class="w-4 h-4"></i> Minify
+            </button>
+            <button onclick="jsonClear()" class="inline-flex items-center gap-1.5 px-4 py-2 rounded-lg border border-line text-sm font-medium text-ink-soft hover:bg-paper transition-colors">
+              <i data-lucide="eraser" class="w-4 h-4"></i> Clear
+            </button>
+          </div>
+
+          <p id="json-status" class="text-sm hidden rounded-lg px-3 py-2 font-mono"></p>
+
+          <div>
+            <div class="flex items-center justify-between mb-1.5">
+              <label for="json-output" class="text-xs font-mono uppercase tracking-wide text-ink-soft">Output</label>
+              <button onclick="copyText('json-output', this)" class="copy-btn text-xs font-medium text-accent-dark hover:text-accent flex items-center gap-1">
+                <i data-lucide="copy" class="w-3.5 h-3.5"></i> Copy
+              </button>
+            </div>
+            <textarea id="json-output" rows="10" readonly placeholder="Formatted JSON will appear here…"
+              class="w-full resize-y rounded-lg border border-line bg-paper/40 p-3 text-sm font-mono text-ink-soft"></textarea>
+          </div>
+        </div>
+      </section>
+
+      <!-- ===================== TOOL 7: MARKDOWN ===================== -->
+      <section id="view-markdown" class="view hidden">
+        <p class="font-mono text-xs tracking-widest uppercase text-signal mb-2">T-07</p>
+        <h1 class="font-display text-2xl md:text-3xl font-semibold mb-1 flex items-center gap-2">
+          <i data-lucide="file-text" class="w-6 h-6 text-accent"></i> Markdown Previewer
+        </h1>
+        <p class="text-muted mb-8">Write Markdown on one side, see the rendered result update live on the other.</p>
+
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+          <div class="bg-surface border border-line rounded-xl p-5">
+            <label for="md-input" class="text-xs font-mono uppercase tracking-wide text-ink-soft mb-1.5 block">Markdown</label>
+            <textarea id="md-input" rows="16" placeholder="# Heading&#10;&#10;Write **bold**, *italic*, `code`, lists, links, and > quotes."
+              class="w-full h-full resize-y rounded-lg border border-line bg-paper/60 p-3 text-sm font-mono focus:bg-white transition-colors"></textarea>
+          </div>
+          <div class="bg-surface border border-line rounded-xl p-5">
+            <span class="text-xs font-mono uppercase tracking-wide text-ink-soft mb-1.5 block">Preview</span>
+            <div id="md-output" class="prose-md w-full h-[calc(100%-1.75rem)] min-h-[16rem] rounded-lg border border-line bg-paper/40 p-4 text-sm overflow-y-auto"></div>
+          </div>
+        </div>
+      </section>
+
+      <!-- ===================== TOOL 8: COLOR ===================== -->
+      <section id="view-color" class="view hidden">
+        <p class="font-mono text-xs tracking-widest uppercase text-signal mb-2">T-08</p>
+        <h1 class="font-display text-2xl md:text-3xl font-semibold mb-1 flex items-center gap-2">
+          <i data-lucide="palette" class="w-6 h-6 text-accent"></i> Color Picker &amp; Converter
+        </h1>
+        <p class="text-muted mb-8">Pick a color and get HEX, RGB, and HSL values instantly.</p>
+
+        <div class="bg-surface border border-line rounded-xl p-5">
+          <div class="flex flex-col sm:flex-row gap-6 items-start sm:items-center mb-6">
+            <input type="color" id="color-input" value="#0ea5a0" class="w-24 h-24 rounded-xl border border-line cursor-pointer shrink-0" aria-label="Pick a color">
+            <div id="color-preview" class="w-full sm:flex-1 h-24 rounded-xl border border-line" style="background:#0ea5a0"></div>
+          </div>
+
+          <div class="space-y-3">
+            <div class="flex items-center gap-3 bg-paper/60 border border-line rounded-lg px-4 py-3">
+              <span class="text-xs font-mono uppercase tracking-wide text-ink-soft w-14 shrink-0">Hex</span>
+              <span id="color-hex" class="font-mono text-sm flex-1 truncate">#0EA5A0</span>
+              <button onclick="copyText('color-hex', this, true)" class="copy-btn text-ink-soft hover:text-accent" aria-label="Copy hex value"><i data-lucide="copy" class="w-4 h-4"></i></button>
+            </div>
+            <div class="flex items-center gap-3 bg-paper/60 border border-line rounded-lg px-4 py-3">
+              <span class="text-xs font-mono uppercase tracking-wide text-ink-soft w-14 shrink-0">RGB</span>
+              <span id="color-rgb" class="font-mono text-sm flex-1 truncate">rgb(14, 165, 160)</span>
+              <button onclick="copyText('color-rgb', this, true)" class="copy-btn text-ink-soft hover:text-accent" aria-label="Copy RGB value"><i data-lucide="copy" class="w-4 h-4"></i></button>
+            </div>
+            <div class="flex items-center gap-3 bg-paper/60 border border-line rounded-lg px-4 py-3">
+              <span class="text-xs font-mono uppercase tracking-wide text-ink-soft w-14 shrink-0">HSL</span>
+              <span id="color-hsl" class="font-mono text-sm flex-1 truncate">hsl(177, 85%, 35%)</span>
+              <button onclick="copyText('color-hsl', this, true)" class="copy-btn text-ink-soft hover:text-accent" aria-label="Copy HSL value"><i data-lucide="copy" class="w-4 h-4"></i></button>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- ===================== TOOL 9: LOREM ===================== -->
+      <section id="view-lorem" class="view hidden">
+        <p class="font-mono text-xs tracking-widest uppercase text-signal mb-2">T-09</p>
+        <h1 class="font-display text-2xl md:text-3xl font-semibold mb-1 flex items-center gap-2">
+          <i data-lucide="align-left" class="w-6 h-6 text-accent"></i> Lorem Ipsum Generator
+        </h1>
+        <p class="text-muted mb-8">Generate placeholder text by paragraph or word count.</p>
+
+        <div class="bg-surface border border-line rounded-xl p-5 space-y-5">
+          <div class="flex flex-wrap items-center gap-4">
+            <div class="flex rounded-lg border border-line overflow-hidden text-sm">
+              <button id="lorem-mode-p" onclick="setLoremMode('paragraphs')" class="px-4 py-2 bg-accent text-white font-medium">Paragraphs</button>
+              <button id="lorem-mode-w" onclick="setLoremMode('words')" class="px-4 py-2 text-ink-soft hover:bg-paper">Words</button>
+            </div>
+
+            <div class="flex items-center gap-3 flex-1 min-w-[220px]">
+              <input type="range" id="lorem-slider" min="1" max="20" value="3" class="flex-1" aria-label="Amount to generate">
+              <span id="lorem-count-label" class="font-mono text-sm w-24 text-right shrink-0">3 paragraphs</span>
+            </div>
+          </div>
+
+          <button onclick="generateLorem()" class="inline-flex items-center gap-1.5 px-4 py-2 rounded-lg bg-accent text-white text-sm font-medium hover:bg-accent-dark transition-colors">
+            <i data-lucide="refresh-cw" class="w-4 h-4"></i> Generate
+          </button>
+
+          <div>
+            <div class="flex items-center justify-between mb-1.5">
+              <label for="lorem-output" class="text-xs font-mono uppercase tracking-wide text-ink-soft">Output</label>
+              <button onclick="copyText('lorem-output', this)" class="copy-btn text-xs font-medium text-accent-dark hover:text-accent flex items-center gap-1">
+                <i data-lucide="copy" class="w-3.5 h-3.5"></i> Copy
+              </button>
+            </div>
+            <textarea id="lorem-output" rows="10" readonly
+              class="w-full resize-y rounded-lg border border-line bg-paper/40 p-3 text-sm leading-relaxed text-ink"></textarea>
+          </div>
+        </div>
+      </section>
+
+      <!-- ===================== TOOL 10: UUID / HASH ===================== -->
+      <section id="view-uuid" class="view hidden">
+        <p class="font-mono text-xs tracking-widest uppercase text-signal mb-2">T-10</p>
+        <h1 class="font-display text-2xl md:text-3xl font-semibold mb-1 flex items-center gap-2">
+          <i data-lucide="fingerprint" class="w-6 h-6 text-accent"></i> UUID &amp; Hash Generator
+        </h1>
+        <p class="text-muted mb-8">Generate random UUID v4s, or hash any text with the Web Crypto API.</p>
+
+        <div class="space-y-5">
+          <div class="bg-surface border border-line rounded-xl p-5">
+            <div class="flex items-center justify-between mb-2">
+              <span class="text-xs font-mono uppercase tracking-wide text-ink-soft">UUID v4</span>
+              <button onclick="generateUUID()" class="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-accent text-white text-xs font-medium hover:bg-accent-dark transition-colors">
+                <i data-lucide="refresh-cw" class="w-3.5 h-3.5"></i> New UUID
+              </button>
+            </div>
+            <div class="flex items-center gap-3 bg-paper/60 border border-line rounded-lg px-4 py-3">
+              <span id="uuid-output" class="font-mono text-sm flex-1 truncate"></span>
+              <button onclick="copyText('uuid-output', this, true)" class="copy-btn text-ink-soft hover:text-accent" aria-label="Copy UUID"><i data-lucide="copy" class="w-4 h-4"></i></button>
+            </div>
+          </div>
+
+          <div class="bg-surface border border-line rounded-xl p-5 space-y-4">
+            <label for="hash-input" class="text-xs font-mono uppercase tracking-wide text-ink-soft block">Hash generator</label>
+            <textarea id="hash-input" rows="3" placeholder="Text to hash…"
+              class="w-full resize-y rounded-lg border border-line bg-paper/60 p-3 text-sm font-mono focus:bg-white transition-colors"></textarea>
+
+            <div class="flex flex-wrap gap-2">
+              <button onclick="generateHash('SHA-1')" class="px-3 py-1.5 rounded-lg border border-line text-xs font-medium text-ink-soft hover:bg-paper transition-colors">SHA-1</button>
+              <button onclick="generateHash('SHA-256')" class="px-3 py-1.5 rounded-lg border border-line text-xs font-medium text-ink-soft hover:bg-paper transition-colors">SHA-256</button>
+              <button onclick="generateHash('SHA-384')" class="px-3 py-1.5 rounded-lg border border-line text-xs font-medium text-ink-soft hover:bg-paper transition-colors">SHA-384</button>
+              <button onclick="generateHash('SHA-512')" class="px-3 py-1.5 rounded-lg border border-line text-xs font-medium text-ink-soft hover:bg-paper transition-colors">SHA-512</button>
+            </div>
+
+            <div class="flex items-center gap-3 bg-paper/60 border border-line rounded-lg px-4 py-3">
+              <span id="hash-output" class="font-mono text-xs sm:text-sm flex-1 break-all">Result will appear here…</span>
+              <button onclick="copyText('hash-output', this, true)" class="copy-btn text-ink-soft hover:text-accent shrink-0" aria-label="Copy hash"><i data-lucide="copy" class="w-4 h-4"></i></button>
+            </div>
+          </div>
+        </div>
+      </section>
+
+    </div>
+  </main>
+</div>
+
+<!-- Toasts -->
+<div id="toastContainer" class="fixed bottom-4 right-4 z-50 space-y-2"></div>
+
+<script>
+/* ============================================================
+   ICON INIT (called once)
+============================================================ */
+lucide.createIcons();
+
+/* ============================================================
+   NAVIGATION — tab switching without reload
+============================================================ */
+const views = ['home', 'compressor', 'qr', 'password', 'text', 'base64', 'json', 'markdown', 'color', 'lorem', 'uuid'];
+
+function showView(name) {
+  views.forEach(v => {
+    const el = document.getElementById('view-' + v);
+    if (v === name) { el.classList.remove('hidden'); }
+    else { el.classList.add('hidden'); }
+  });
+  // Re-trigger fade animation
+  const active = document.getElementById('view-' + name);
+  active.classList.remove('view');
+  void active.offsetWidth; // reflow to restart animation
+  active.classList.add('view');
+
+  // Update sidebar active state (desktop)
+  document.querySelectorAll('.drawer').forEach(btn => {
+    btn.classList.toggle('active', btn.dataset.view === name);
+  });
+
+  window.scrollTo({ top: 0, behavior: 'smooth' });
+}
+
+// Wire up every element with a data-view attribute (sidebar, mobile nav, home cards)
+document.querySelectorAll('[data-view]').forEach(el => {
+  el.addEventListener('click', () => {
+    showView(el.dataset.view);
+    closeMobileNav();
+  });
+});
+
+// Mobile nav toggle
+const mobileNav = document.getElementById('mobile-nav');
+document.getElementById('mobile-menu-btn').addEventListener('click', () => {
+  mobileNav.classList.remove('hidden');
+});
+function closeMobileNav() { mobileNav.classList.add('hidden'); }
+document.getElementById('mobile-nav-close').addEventListener('click', closeMobileNav);
+document.getElementById('mobile-nav-backdrop').addEventListener('click', closeMobileNav);
+
+/* ============================================================
+   TOOL 1: IMAGE COMPRESSOR & RESIZER
+============================================================ */
+const imgInput = document.getElementById('img-input');
+const imgControls = document.getElementById('img-controls');
+const imgPreviewWrap = document.getElementById('img-preview-wrap');
+const imgEmpty = document.getElementById('img-empty');
+const canvas = document.getElementById('img-canvas');
+const ctx = canvas.getContext('2d');
+const qualitySlider = document.getElementById('quality-slider');
+const qualityVal = document.getElementById('quality-val');
+const widthInput = document.getElementById('width-input');
+const heightInput = document.getElementById('height-input');
+const aspectLock = document.getElementById('aspect-lock');
+const originalSizeEl = document.getElementById('original-size');
+const compressedSizeEl = document.getElementById('compressed-size');
+const downloadImgBtn = document.getElementById('download-img-btn');
+
+let sourceImage = null;   // the loaded Image object
+let originalAspect = 1;
+let originalFileSize = 0;
+let originalFileType = 'image/jpeg';
+
+function formatBytes(bytes) {
+  if (bytes < 1024) return bytes + ' B';
+  if (bytes < 1024 * 1024) return (bytes / 1024).toFixed(1) + ' KB';
+  return (bytes / (1024 * 1024)).toFixed(2) + ' MB';
+}
+
+imgInput.addEventListener('change', (e) => {
+  const file = e.target.files[0];
+  if (!file) return;
+
+  originalFileSize = file.size;
+  originalFileType = file.type || 'image/jpeg';
+  originalSizeEl.textContent = formatBytes(originalFileSize);
+
+  const reader = new FileReader();
+  reader.onload = (evt) => {
+    const img = new Image();
+    img.onload = () => {
+      sourceImage = img;
+      originalAspect = img.width / img.height;
+      widthInput.value = img.width;
+      heightInput.value = img.height;
+
+      imgControls.classList.remove('hidden');
+      imgPreviewWrap.classList.remove('hidden');
+      imgPreviewWrap.classList.add('flex');
+      imgEmpty.classList.add('hidden');
+
+      renderCompressedImage();
+    };
+    img.src = evt.target.result;
+  };
+  reader.readAsDataURL(file);
+});
+
+// Keep aspect ratio in sync when width/height change
+widthInput.addEventListener('input', () => {
+  if (aspectLock.checked && sourceImage) {
+    heightInput.value = Math.round(widthInput.value / originalAspect);
+  }
+  renderCompressedImage();
+});
+heightInput.addEventListener('input', () => {
+  if (aspectLock.checked && sourceImage) {
+    widthInput.value = Math.round(heightInput.value * originalAspect);
+  }
+  renderCompressedImage();
+});
+qualitySlider.addEventListener('input', () => {
+  qualityVal.textContent = qualitySlider.value + '%';
+  renderCompressedImage();
+});
+
+function renderCompressedImage() {
+  if (!sourceImage) return;
+  const w = Math.max(1, parseInt(widthInput.value) || sourceImage.width);
+  const h = Math.max(1, parseInt(heightInput.value) || sourceImage.height);
+
+  canvas.width = w;
+  canvas.height = h;
+  ctx.clearRect(0, 0, w, h);
+  ctx.drawImage(sourceImage, 0, 0, w, h);
+
+  // JPEG compression respects the quality slider; PNG stays lossless (quality slider ignored by spec)
+  const outputType = originalFileType === 'image/png' ? 'image/png' : 'image/jpeg';
+  const quality = parseInt(qualitySlider.value) / 100;
+  const dataUrl = canvas.toDataURL(outputType, quality);
+
+  // Estimate compressed size from base64 length
+  const base64Length = dataUrl.split(',')[1].length;
+  const approxBytes = Math.round((base64Length * 3) / 4);
+  compressedSizeEl.textContent = formatBytes(approxBytes);
+
+  downloadImgBtn.dataset.url = dataUrl;
+  downloadImgBtn.dataset.ext = outputType === 'image/png' ? 'png' : 'jpg';
+}
+
+downloadImgBtn.addEventListener('click', () => {
+  if (!downloadImgBtn.dataset.url) return;
+  const a = document.createElement('a');
+  a.href = downloadImgBtn.dataset.url;
+  a.download = 'compressed-image.' + downloadImgBtn.dataset.ext;
+  a.click();
+});
+
+/* ============================================================
+   TOOL 2: QR CODE GENERATOR
+============================================================ */
+const qrInput = document.getElementById('qr-input');
+const qrSize = document.getElementById('qr-size');
+const qrSizeVal = document.getElementById('qr-size-val');
+const qrEmpty = document.getElementById('qr-empty');
+const qrContainer = document.getElementById('qrcode');
+const downloadQrBtn = document.getElementById('download-qr-btn');
+
+let qrCodeInstance = null;
+
+function renderQR() {
+  const text = qrInput.value.trim();
+  qrContainer.innerHTML = '';
+
+  if (!text) {
+    qrEmpty.classList.remove('hidden');
+    downloadQrBtn.disabled = true;
+    return;
+  }
+
+  qrEmpty.classList.add('hidden');
+  const size = parseInt(qrSize.value);
+
+  qrCodeInstance = new QRCode(qrContainer, {
+    text: text,
+    width: size,
+    height: size,
+    colorDark: '#1B1F23',
+    colorLight: '#ffffff',
+    correctLevel: QRCode.CorrectLevel.H
+  });
+
+  downloadQrBtn.disabled = false;
+}
+
+qrInput.addEventListener('input', renderQR);
+qrSize.addEventListener('input', () => {
+  qrSizeVal.textContent = qrSize.value + 'px';
+  renderQR();
+});
+
+downloadQrBtn.addEventListener('click', () => {
+  // qrcode.js renders either an <img> or a <canvas> depending on browser
+  const img = qrContainer.querySelector('img');
+  const canvasEl = qrContainer.querySelector('canvas');
+  const src = img ? img.src : (canvasEl ? canvasEl.toDataURL('image/png') : null);
+  if (!src) return;
+  const a = document.createElement('a');
+  a.href = src;
+  a.download = 'qrcode.png';
+  a.click();
+});
+
+/* ============================================================
+   TOOL 3: PASSWORD GENERATOR & STRENGTH CHECKER
+============================================================ */
+const pwLength = document.getElementById('pw-length');
+const pwLengthVal = document.getElementById('pw-length-val');
+const pwUpper = document.getElementById('pw-uppercase');
+const pwLower = document.getElementById('pw-lowercase');
+const pwNumbers = document.getElementById('pw-numbers');
+const pwSymbols = document.getElementById('pw-symbols');
+const pwGenerateBtn = document.getElementById('pw-generate-btn');
+const pwOutput = document.getElementById('pw-output');
+const pwCopyBtn = document.getElementById('pw-copy-btn');
+const pwCopyTooltip = document.getElementById('pw-copy-tooltip');
+const pwStrengthBar = document.getElementById('pw-strength-bar');
+const pwStrengthLabel = document.getElementById('pw-strength-label');
+
+const CHARSETS = {
+  upper: 'ABCDEFGHIJKLMNOPQRSTUVWXYZ',
+  lower: 'abcdefghijklmnopqrstuvwxyz',
+  numbers: '0123456789',
+  symbols: '!@#$%^&*()_+-=[]{}|;:,.<>?'
+};
+
+pwLength.addEventListener('input', () => { pwLengthVal.textContent = pwLength.value; });
+
+function generatePassword() {
+  let pool = '';
+  if (pwUpper.checked) pool += CHARSETS.upper;
+  if (pwLower.checked) pool += CHARSETS.lower;
+  if (pwNumbers.checked) pool += CHARSETS.numbers;
+  if (pwSymbols.checked) pool += CHARSETS.symbols;
+
+  if (!pool) {
+    pwOutput.value = '';
+    pwStrengthLabel.textContent = 'Select at least one option';
+    pwStrengthBar.style.width = '0%';
+    return;
+  }
+
+  const length = parseInt(pwLength.value);
+  let result = '';
+  // Use crypto for stronger randomness where available
+  const randomValues = new Uint32Array(length);
+  (window.crypto || window.msCrypto).getRandomValues(randomValues);
+  for (let i = 0; i < length; i++) {
+    result += pool[randomValues[i] % pool.length];
+  }
+
+  pwOutput.value = result;
+  checkStrength(result);
+}
+
+function checkStrength(pw) {
+  let score = 0;
+  if (pw.length >= 8) score++;
+  if (pw.length >= 12) score++;
+  if (pw.length >= 16) score++;
+  if (/[A-Z]/.test(pw)) score++;
+  if (/[a-z]/.test(pw)) score++;
+  if (/[0-9]/.test(pw)) score++;
+  if (/[^A-Za-z0-9]/.test(pw)) score++;
+
+  let percent, label, color;
+  if (score <= 2) { percent = 25; label = 'Weak'; color = '#E5484D'; }
+  else if (score <= 4) { percent = 55; label = 'Medium'; color = '#F5A623'; }
+  else if (score <= 6) { percent = 80; label = 'Strong'; color = '#12897A'; }
+  else { percent = 100; label = 'Very strong'; color = '#0E6B5E'; }
+
+  pwStrengthBar.style.width = percent + '%';
+  pwStrengthBar.style.backgroundColor = color;
+  pwStrengthLabel.textContent = label;
+  pwStrengthLabel.style.color = color;
+}
+
+pwGenerateBtn.addEventListener('click', generatePassword);
+
+pwCopyBtn.addEventListener('click', async () => {
+  if (!pwOutput.value) return;
+  try {
+    await navigator.clipboard.writeText(pwOutput.value);
+    pwCopyTooltip.classList.remove('hidden');
+    setTimeout(() => pwCopyTooltip.classList.add('hidden'), 1400);
+  } catch (err) {
+    // Fallback for browsers without clipboard API access
+    pwOutput.select();
+    document.execCommand('copy');
+  }
+});
+
+// Generate one password on first load so the tool isn't empty
+generatePassword();
+
+/* ============================================================
+   TOOL 4: TEXT COUNTER & FORMATTER
+============================================================ */
+const textInput = document.getElementById('text-input');
+const statWords = document.getElementById('stat-words');
+const statChars = document.getElementById('stat-chars');
+const statSentences = document.getElementById('stat-sentences');
+const statReading = document.getElementById('stat-reading');
+
+const WORDS_PER_MINUTE = 200;
+
+function updateTextStats() {
+  const text = textInput.value;
+
+  const words = text.trim().length ? text.trim().split(/\s+/).length : 0;
+  const chars = text.length;
+  const sentences = text.trim().length
+    ? (text.match(/[.!?]+(?=\s|$)/g) || []).length || (text.trim() ? 1 : 0)
+    : 0;
+  const readingMinutes = Math.max(1, Math.ceil(words / WORDS_PER_MINUTE));
+
+  statWords.textContent = words;
+  statChars.textContent = chars;
+  statSentences.textContent = sentences;
+  statReading.textContent = words === 0 ? '0 min' : readingMinutes + ' min';
+}
+
+textInput.addEventListener('input', updateTextStats);
+
+document.getElementById('btn-uppercase').addEventListener('click', () => {
+  textInput.value = textInput.value.toUpperCase();
+  updateTextStats();
+});
+document.getElementById('btn-lowercase').addEventListener('click', () => {
+  textInput.value = textInput.value.toLowerCase();
+  updateTextStats();
+});
+document.getElementById('btn-titlecase').addEventListener('click', () => {
+  textInput.value = textInput.value.replace(/\w\S*/g, (word) =>
+    word.charAt(0).toUpperCase() + word.slice(1).toLowerCase()
+  );
+  updateTextStats();
+});
+document.getElementById('btn-clear').addEventListener('click', () => {
+  textInput.value = '';
+  updateTextStats();
+});
+
+/* ============================================================
+   SHARED: TOASTS + COPY HELPER (dev tools)
+============================================================ */
+function showToast(message, type = 'success') {
+  const container = document.getElementById('toastContainer');
+  const colors = {
+    success: 'bg-ink text-white',
+    error: 'bg-danger text-white',
+  };
+  const el = document.createElement('div');
+  el.className = `${colors[type]} px-4 py-2.5 rounded-lg text-sm shadow-lg flex items-center gap-2 opacity-0 translate-y-1 transition-all duration-200`;
+  el.innerHTML = `<i data-lucide="${type === 'success' ? 'check' : 'alert-triangle'}" class="w-4 h-4 shrink-0"></i><span>${message}</span>`;
+  container.appendChild(el);
+  lucide.createIcons();
+  requestAnimationFrame(() => {
+    el.classList.remove('opacity-0', 'translate-y-1');
+  });
+  setTimeout(() => {
+    el.classList.add('opacity-0');
+    setTimeout(() => el.remove(), 200);
+  }, 2200);
+}
+
+function copyText(elId, btn, isSpan = false) {
+  const el = document.getElementById(elId);
+  const text = isSpan ? el.textContent : el.value;
+  if (!text || !text.trim()) {
+    showToast('Nothing to copy yet', 'error');
+    return;
+  }
+  navigator.clipboard.writeText(text).then(() => {
+    showToast('Copied to clipboard');
+    if (btn) {
+      const icon = btn.querySelector('i') || btn.querySelector('svg');
+      if (icon && icon.getAttribute('data-lucide')) {
+        const original = icon.getAttribute('data-lucide');
+        icon.setAttribute('data-lucide', 'check');
+        lucide.createIcons();
+        setTimeout(() => {
+          icon.setAttribute('data-lucide', original);
+          lucide.createIcons();
+        }, 1200);
+      }
+    }
+  }).catch(() => showToast('Copy failed — try selecting manually', 'error'));
+}
+
+/* ============================================================
+   TOOL 5: BASE64 ENCODER / DECODER
+============================================================ */
+function b64EncodeUnicode(str) {
+  return btoa(String.fromCharCode(...new TextEncoder().encode(str)));
+}
+function b64DecodeUnicode(str) {
+  return new TextDecoder().decode(Uint8Array.from(atob(str), c => c.charCodeAt(0)));
+}
+
+function b64Msg(text, ok) {
+  const msg = document.getElementById('b64-msg');
+  msg.textContent = text;
+  msg.className = 'text-xs mt-1.5 ' + (ok ? 'text-success' : 'text-danger');
+  msg.classList.remove('hidden');
+}
+
+function b64Encode() {
+  const input = document.getElementById('b64-input').value;
+  if (!input) { b64Msg('Enter some text to encode.', false); return; }
+  try {
+    document.getElementById('b64-output').value = b64EncodeUnicode(input);
+    b64Msg('Encoded successfully.', true);
+  } catch (e) {
+    b64Msg('Could not encode this input: ' + e.message, false);
+  }
+}
+
+function b64Decode() {
+  const input = document.getElementById('b64-input').value.trim();
+  if (!input) { b64Msg('Enter a Base64 string to decode.', false); return; }
+  try {
+    document.getElementById('b64-output').value = b64DecodeUnicode(input);
+    b64Msg('Decoded successfully.', true);
+  } catch (e) {
+    b64Msg('Invalid Base64 string — check for missing characters or padding.', false);
+  }
+}
+
+function b64Clear() {
+  document.getElementById('b64-input').value = '';
+  document.getElementById('b64-output').value = '';
+  document.getElementById('b64-msg').classList.add('hidden');
+}
+
+/* ============================================================
+   TOOL 6: JSON FORMATTER & VALIDATOR
+============================================================ */
+function jsonStatus(text, state) {
+  const el = document.getElementById('json-status');
+  const styles = {
+    success: 'bg-success/10 text-success',
+    error: 'bg-danger/10 text-danger',
+  };
+  el.textContent = text;
+  el.className = 'text-sm rounded-lg px-3 py-2 font-mono ' + styles[state];
+  el.classList.remove('hidden');
+}
+
+function jsonFormat() {
+  const raw = document.getElementById('json-input').value;
+  if (!raw.trim()) { jsonStatus('Paste some JSON first.', 'error'); return; }
+  try {
+    const parsed = JSON.parse(raw);
+    document.getElementById('json-output').value = JSON.stringify(parsed, null, 2);
+    jsonStatus('✓ Valid JSON — formatted below.', 'success');
+  } catch (e) {
+    document.getElementById('json-output').value = '';
+    jsonStatus('✗ ' + e.message, 'error');
+  }
+}
+
+function jsonMinify() {
+  const raw = document.getElementById('json-input').value;
+  if (!raw.trim()) { jsonStatus('Paste some JSON first.', 'error'); return; }
+  try {
+    const parsed = JSON.parse(raw);
+    document.getElementById('json-output').value = JSON.stringify(parsed);
+    jsonStatus('✓ Valid JSON — minified below.', 'success');
+  } catch (e) {
+    document.getElementById('json-output').value = '';
+    jsonStatus('✗ ' + e.message, 'error');
+  }
+}
+
+function jsonValidate() {
+  const raw = document.getElementById('json-input').value;
+  if (!raw.trim()) { jsonStatus('Paste some JSON first.', 'error'); return; }
+  try {
+    JSON.parse(raw);
+    jsonStatus('✓ This is valid JSON.', 'success');
+  } catch (e) {
+    jsonStatus('✗ Invalid JSON — ' + e.message, 'error');
+  }
+}
+
+function jsonClear() {
+  document.getElementById('json-input').value = '';
+  document.getElementById('json-output').value = '';
+  document.getElementById('json-status').classList.add('hidden');
+}
+
+/* ============================================================
+   TOOL 7: MARKDOWN PREVIEWER
+============================================================ */
+function escapeHtml(str) {
+  return str.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
+}
+
+function markdownToHtml(src) {
+  let text = escapeHtml(src);
+
+  // fenced code blocks
+  text = text.replace(/```([\s\S]*?)```/g, (m, code) =>
+    `<pre class="bg-ink text-paper rounded-lg p-3 overflow-x-auto text-xs font-mono my-2"><code>${code.trim()}</code></pre>`);
+
+  const lines = text.split('\n');
+  let html = '';
+  let inList = false;
+  let inQuote = false;
+  let paragraph = [];
+
+  const flushParagraph = () => {
+    if (paragraph.length) {
+      html += `<p class="mb-3">${paragraph.join(' ')}</p>`;
+      paragraph = [];
+    }
+  };
+  const closeList = () => { if (inList) { html += '</ul>'; inList = false; } };
+  const closeQuote = () => { if (inQuote) { html += '</blockquote>'; inQuote = false; } };
+
+  const inlineFormat = (line) => line
+    .replace(/`([^`]+)`/g, '<code class="bg-paper px-1 py-0.5 rounded font-mono text-[0.85em]">$1</code>')
+    .replace(/\*\*([^*]+)\*\*/g, '<strong>$1</strong>')
+    .replace(/\*([^*]+)\*/g, '<em>$1</em>')
+    .replace(/\[([^\]]+)\]\(([^)]+)\)/g, '<a href="$2" class="text-accent-dark underline" target="_blank" rel="noopener">$1</a>');
+
+  for (const rawLine of lines) {
+    const line = rawLine.trim();
+
+    if (line.startsWith('<pre')) { flushParagraph(); closeList(); closeQuote(); html += rawLine; continue; }
+    if (line === '') { flushParagraph(); closeList(); closeQuote(); continue; }
+
+    const h = line.match(/^(#{1,6})\s+(.*)/);
+    if (h) {
+      flushParagraph(); closeList(); closeQuote();
+      const level = h[1].length;
+      const sizes = { 1: 'text-2xl', 2: 'text-xl', 3: 'text-lg', 4: 'text-base', 5: 'text-sm', 6: 'text-sm' };
+      html += `<h${level} class="font-display font-bold ${sizes[level]} mt-4 mb-2">${inlineFormat(h[2])}</h${level}>`;
+      continue;
+    }
+
+    // Note: input is HTML-escaped above, so ">" arrives as "&gt;"
+    if (line.startsWith('&gt; ')) {
+      flushParagraph(); closeList();
+      if (!inQuote) { html += '<blockquote class="border-l-2 border-accent pl-3 italic text-ink-soft my-2">'; inQuote = true; }
+      html += `<p>${inlineFormat(line.slice(5))}</p>`;
+      continue;
+    }
+    closeQuote();
+
+    const li = line.match(/^[-*]\s+(.*)/);
+    if (li) {
+      flushParagraph();
+      if (!inList) { html += '<ul class="list-disc list-inside space-y-1 mb-3">'; inList = true; }
+      html += `<li>${inlineFormat(li[1])}</li>`;
+      continue;
+    }
+    closeList();
+
+    paragraph.push(inlineFormat(line));
+  }
+  flushParagraph(); closeList(); closeQuote();
+
+  return html || '<p class="text-ink-soft">Nothing to preview yet.</p>';
+}
+
+const mdInput = document.getElementById('md-input');
+const mdOutput = document.getElementById('md-output');
+mdInput.addEventListener('input', () => { mdOutput.innerHTML = markdownToHtml(mdInput.value); });
+mdInput.value = `# Hello Markdown\n\nThis is a **live** preview with *italic*, \`inline code\`, and [a link](https://example.com).\n\n- fast\n- simple\n- no build step\n\n> Edit the left panel to see changes.`;
+mdOutput.innerHTML = markdownToHtml(mdInput.value);
+
+/* ============================================================
+   TOOL 8: COLOR PICKER & CONVERTER
+============================================================ */
+function hexToRgb(hex) {
+  const n = parseInt(hex.slice(1), 16);
+  return { r: (n >> 16) & 255, g: (n >> 8) & 255, b: n & 255 };
+}
+function rgbToHsl(r, g, b) {
+  r /= 255; g /= 255; b /= 255;
+  const max = Math.max(r, g, b), min = Math.min(r, g, b);
+  let h, s, l = (max + min) / 2;
+  if (max === min) { h = s = 0; }
+  else {
+    const d = max - min;
+    s = l > 0.5 ? d / (2 - max - min) : d / (max + min);
+    switch (max) {
+      case r: h = (g - b) / d + (g < b ? 6 : 0); break;
+      case g: h = (b - r) / d + 2; break;
+      case b: h = (r - g) / d + 4; break;
+    }
+    h /= 6;
+  }
+  return { h: Math.round(h * 360), s: Math.round(s * 100), l: Math.round(l * 100) };
+}
+
+function updateColor() {
+  const hex = document.getElementById('color-input').value;
+  const { r, g, b } = hexToRgb(hex);
+  const { h, s, l } = rgbToHsl(r, g, b);
+  document.getElementById('color-preview').style.background = hex;
+  document.getElementById('color-hex').textContent = hex.toUpperCase();
+  document.getElementById('color-rgb').textContent = `rgb(${r}, ${g}, ${b})`;
+  document.getElementById('color-hsl').textContent = `hsl(${h}, ${s}%, ${l}%)`;
+}
+document.getElementById('color-input').addEventListener('input', updateColor);
+updateColor();
+
+/* ============================================================
+   TOOL 9: LOREM IPSUM GENERATOR
+============================================================ */
+const loremWords = ("lorem ipsum dolor sit amet consectetur adipiscing elit sed do eiusmod tempor " +
+  "incididunt ut labore et dolore magna aliqua enim ad minim veniam quis nostrud exercitation " +
+  "ullamco laboris nisi aliquip ex ea commodo consequat duis aute irure in reprehenderit " +
+  "voluptate velit esse cillum eu fugiat nulla pariatur excepteur sint occaecat cupidatat " +
+  "non proident sunt culpa qui officia deserunt mollit anim id est laborum").split(' ');
+
+let loremMode = 'paragraphs';
+
+function setLoremMode(mode) {
+  loremMode = mode;
+  document.getElementById('lorem-mode-p').className = 'px-4 py-2 font-medium ' + (mode === 'paragraphs' ? 'bg-accent text-white' : 'text-ink-soft hover:bg-paper');
+  document.getElementById('lorem-mode-w').className = 'px-4 py-2 font-medium ' + (mode === 'words' ? 'bg-accent text-white' : 'text-ink-soft hover:bg-paper');
+  const slider = document.getElementById('lorem-slider');
+  if (mode === 'paragraphs') { slider.max = 20; if (parseInt(slider.value, 10) > 20) slider.value = 20; }
+  else { slider.max = 200; }
+  updateLoremLabel();
+}
+
+function randomWord() { return loremWords[Math.floor(Math.random() * loremWords.length)]; }
+
+function makeSentence(len) {
+  const words = [];
+  for (let i = 0; i < len; i++) words.push(randomWord());
+  let s = words.join(' ');
+  return s.charAt(0).toUpperCase() + s.slice(1) + '.';
+}
+
+function makeParagraph(first) {
+  const sentences = 3 + Math.floor(Math.random() * 3);
+  let s = [];
+  if (first) s.push('Lorem ipsum dolor sit amet, consectetur adipiscing elit.');
+  for (let i = s.length; i < sentences; i++) s.push(makeSentence(6 + Math.floor(Math.random() * 8)));
+  return s.join(' ');
+}
+
+function updateLoremLabel() {
+  const val = document.getElementById('lorem-slider').value;
+  document.getElementById('lorem-count-label').textContent = `${val} ${loremMode === 'paragraphs' ? 'paragraph' + (val > 1 ? 's' : '') : 'word' + (val > 1 ? 's' : '')}`;
+}
+document.getElementById('lorem-slider').addEventListener('input', updateLoremLabel);
+
+function generateLorem() {
+  const count = parseInt(document.getElementById('lorem-slider').value, 10);
+  let result;
+  if (loremMode === 'paragraphs') {
+    const paras = [];
+    for (let i = 0; i < count; i++) paras.push(makeParagraph(i === 0));
+    result = paras.join('\n\n');
+  } else {
+    const words = ['Lorem', 'ipsum'];
+    while (words.length < count) words.push(randomWord());
+    result = words.slice(0, count).join(' ') + '.';
+  }
+  document.getElementById('lorem-output').value = result;
+}
+
+updateLoremLabel();
+generateLorem();
+
+/* ============================================================
+   TOOL 10: UUID + HASH
+============================================================ */
+function generateUUID() {
+  document.getElementById('uuid-output').textContent = crypto.randomUUID();
+}
+generateUUID();
+
+async function generateHash(algo) {
+  const input = document.getElementById('hash-input').value;
+  const output = document.getElementById('hash-output');
+  if (!input) { output.textContent = 'Enter text above to hash it.'; return; }
+  try {
+    const buffer = new TextEncoder().encode(input);
+    const digest = await crypto.subtle.digest(algo, buffer);
+    const hex = Array.from(new Uint8Array(digest)).map(b => b.toString(16).padStart(2, '0')).join('');
+    output.textContent = `${algo}: ${hex}`;
+  } catch (e) {
+    output.textContent = 'Could not generate hash: ' + e.message;
+    showToast('Hashing failed', 'error');
+  }
+}
+
+/* ============================================================
+   INIT
+============================================================ */
+showView('home');
+updateTextStats();
+</script>
+</body>
+</html>
